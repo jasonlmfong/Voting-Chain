@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="description" content="This is the voting page">
+		<meta name="viewport" content="width=divice-width, initial scale=1.0">
+		<title>Title</title>
+		<link rel="stylesheet" type="text/css" href="styles.css">
+		<script src="vote.js"></script>
+	</head>
+
+	<body>
+		<section id="top">
+			<div></div>
+		</section>
+		
+		<header>
+			<h1>Cats or Dogs</h1>
+		</header>
+		<section id="main">
+			<div class="box">
+				<img src="https://cdn.theatlantic.com/thumbor/W544GIT4l3z8SG-FMUoaKpFLaxE=/0x131:2555x1568/1600x900/media/img/mt/2017/06/shutterstock_319985324/original.jpg" alt="a cute cat" id="cat-image">
+				<button class="button" onClick="catOnClick()">Vote</button>
+				<h2 id="cat clicks"></h2>
+			</div>
+			<div class="box">
+				<img src="https://assets.bwbx.io/images/users/iqjWHBFdfxIU/iyRWcdIqVMks/v0/1400x-1.jpg" alt="a cute dog" id="dog-image">
+				<button class="button" onClick="dogOnClick()">Vote</button>
+				<h2 id="dog clicks"></h2>
+			</div>
+		</section>
+	</body>
+</html>
