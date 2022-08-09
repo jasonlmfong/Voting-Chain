@@ -29,5 +29,5 @@ int main()
     std::cout << "is chain valid?" << std::endl
         << VoteChain.isChainValid() << std::endl;
 
-    return 0;
+
 }
