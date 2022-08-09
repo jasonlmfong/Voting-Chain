@@ -20,7 +20,7 @@ Block Blockchain::createGenesisBlock()
     
     std::unordered_map<std::string, int> emptyVotes;
 
-    TransactionData d(emptyVotes, "genesisKey", "voting", time(&current));
+    TransactionData d(emptyVotes, emptyVotes, "genesisKey", "voting", time(&current));
 
     Block genesis(0, d, 0);
     return genesis;
