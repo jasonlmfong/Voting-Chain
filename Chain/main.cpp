@@ -21,7 +21,7 @@ int main()
     votes["cat"] = 1;
     votes["dog"] = 1;
     
-    TransactionData data1(votes, "Joe", "Sally", time(&data1Time));
+    TransactionData data1(votes, votes, "Joe", "Sally", time(&data1Time));
     VoteChain.addBlock(data1);
 
     VoteChain.printChain();

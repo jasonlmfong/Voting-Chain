@@ -77,7 +77,8 @@ void Blockchain::printChain() {
         Block currentBlock = *it;
         printf("\nBlock ===================================");
         printf("\nIndex: %d", currentBlock.getIndex());
-        printf("\nVotes: %f", currentBlock.data.votes);
+        printf("\nTotal Votes: %f", currentBlock.data.totalVotes);
+        printf("\nVote Changes: %f", currentBlock.data.voteChanges);
         printf("\nSenderKey: %s", currentBlock.data.senderKey.c_str());
         printf("\nReceiverKey: %s", currentBlock.data.receiverKey.c_str());
         printf("\nTimestamp: %ld", currentBlock.data.timeStamp);
