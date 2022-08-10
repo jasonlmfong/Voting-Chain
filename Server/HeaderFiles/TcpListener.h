@@ -1,9 +1,6 @@
 #pragma once
 
-#include<iostream>
 #include<WS2tcpip.h>
-#include<string>
-#include<sstream>
 
 #pragma comment (lib, "ws2_32.lib")
 
@@ -17,8 +14,8 @@ class TcpListener
         fd_set m_master; //master file descriptor set
 
     public:
-        TcpListener(const char* ipAddress, int port, int socket): 
-            m_ipAddress(ipAddress), m_port(port) {}
+        TcpListener(const char* ipAddress, int port) : 
+            m_ipAddress(ipAddress), m_port(port) { }
 
         // initialize the listener
         int init();
@@ -27,5 +24,18 @@ class TcpListener
         int run();
 
     protected:
+        //handler for client connections
+        virtual void onClientConnected(int clientSocket);
 
+        //handler for client disconnections
+        virtual void onClientDisconnected(int clientSocket);
+
+        //handler for when a message is received from the client
+        virtual void onMessageReceived(int clientSocket, const char* msg, int length);
+
+        //send a messsage to client
+        void sendToClient(int clientSocket, const char* msg, int length);
+
+        //broadcast a message from a client
+        void broadcastToClients(int sendingClient, const char* msg, int length);
 };
