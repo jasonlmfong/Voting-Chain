@@ -1,9 +1,18 @@
-sendAMessage("GET Votes HTTP/1.1")
-//server.listen(8080, "0.0.0.0", backlog, callback);
-//listen to server response and save votes to catVotes and dogVotes
+const Client = require("./client"); 
+
+//create client
+const voteClient = new Client(); 
 
 var catVotes = 0;
 var dogVotes = 0;
+
+//listen to server response and save votes to catVotes and dogVotes
+voteClient.sendMessage("GET Votes HTTP/1.1") 
+.then((data) => { 
+console.log("Received: ${data}");
+catVotes = data["cat"];
+dogVotes = data["cat"];
+}).catch((err) => console.error(err));  
 
 function catOnClick() {
   //add vote for cat
@@ -11,7 +20,9 @@ function catOnClick() {
   //display both
   document.getElementById("cat clicks").innerHTML = catVotes;
   document.getElementById("dog clicks").innerHTML = dogVotes;
-  sendAMessage("POST Cat HTTP/1.1")
+  //send cat vote to chain server
+  voteClient.sendMessage("POST Cat HTTP/1.1") 
+  .catch((err) => console.error(err));
 };
 
 function dogOnClick() {
@@ -20,14 +31,9 @@ function dogOnClick() {
   //display both
   document.getElementById("cat clicks").innerHTML = catVotes;
   document.getElementById("dog clicks").innerHTML = dogVotes;
-  sendAMessage("POST Dog HTTP/1.1")
+  //send dog vote to chain server
+  voteClient.sendMessage("POST Dog HTTP/1.1") 
+  .catch((err) => console.error(err));
 };
 
-//send message to server backend
-function sendAMessage(msg) {
-  var c = net.createConnection(8080, "0.0.0.1");
-  c.on("connect", function() {
-  // connected to TCP server.
-  c.write(msg);
-  });
-}
+

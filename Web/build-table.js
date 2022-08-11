@@ -1,6 +1,8 @@
 //load polls data to store separately, for the addition of new polls
 //const users = require("./pollsJason.json");
 
+//note yet implemented!!
+
 //console.log(users);
 
 fetch("./students.json").then(response => {
