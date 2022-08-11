@@ -20,7 +20,7 @@ Block Blockchain::createGenesisBlock()
     
     std::unordered_map<std::string, int> emptyVotes;
 
-    TransactionData d(emptyVotes, emptyVotes, "genesisKey", "voting", time(&current));
+    TransactionData d(emptyVotes, emptyVotes, "genesisKey", time(&current));
 
     Block genesis(0, d, 0);
     return genesis;
@@ -79,8 +79,7 @@ void Blockchain::printChain() {
         printf("\nIndex: %d", currentBlock.getIndex());
         printf("\nTotal Votes: %f", currentBlock.data.totalVotes);
         printf("\nVote Changes: %f", currentBlock.data.voteChanges);
-        printf("\nSenderKey: %s", currentBlock.data.senderKey.c_str());
-        printf("\nReceiverKey: %s", currentBlock.data.receiverKey.c_str());
+        printf("\nSenderKey: %s", currentBlock.data.chainKey.c_str());
         printf("\nTimestamp: %ld", currentBlock.data.timeStamp);
         printf("\nHash: %zu", currentBlock.getHash());
         printf("\nPrevious Hash: %zu", currentBlock.getPreviousHash());

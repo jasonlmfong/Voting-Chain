@@ -1,9 +1,9 @@
-#include "TcpListener.h"
+#include "ChainServer.h"
 #include<iostream>
 #include<string>
 #include<sstream>
 
-int TcpListener::init()
+int ChainServer::init()
 {
     //initialize winsock
     WSADATA wsData;
@@ -39,7 +39,7 @@ int TcpListener::init()
         return WSAGetLastError();
     }
 
-    //create master file descriptor set and zero the set
+    //create master fiel descriptor set and zero the set
     FD_ZERO(&m_master);
 
     //add the first socket we want to interact with: the listening socket, we need this to hear the incoming messages
@@ -48,7 +48,7 @@ int TcpListener::init()
     return 0;
 }
 
-int TcpListener::run()
+int ChainServer::run()
 {
     //quit command will stop the server from running
     bool running = true;
@@ -152,36 +152,4 @@ int TcpListener::run()
     //cleanup winsock
     WSACleanup();
     return 0;
-}
-
-void TcpListener::sendToClient(int clientSocket, const char* msg, int length)
-{
-    send(clientSocket, msg, length, 0);
-}
-
-void TcpListener::broadcastToClients(int sendingClient, const char* msg, int length)
-{
-    for (int i = 0; i < m_master.fd_count; i++)
-    {
-        SOCKET outSock = m_master.fd_array[i];
-        if (outSock != m_socket && outSock != sendingClient)
-        {
-            sendToClient(outSock, msg, length);
-        }
-    }
-}
-
-void TcpListener::onClientConnected(int clientSocket)
-{
-
-}
-
-void TcpListener::onClientDisconnected(int clientSocket)
-{
-
-}
-
-void TcpListener::onMessageReceived(int clientSocket, const char* msg, int length)
-{
-
 }

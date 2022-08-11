@@ -1,13 +1,13 @@
-#include "WebServer.h"
+#include "ChainServer.h"
 
-//run webserver
+//run webserver with blockchain
 void main()
 {
-    WebServer webServer("0.0.0.0", 8080);
-    if (webServer.init() != 0)
+    ChainServer chainServer("0.0.0.0", 8080);
+    if (chainServer.init() != 0)
         return;
 
-    webServer.run();
+    chainServer.run();
 
     system("pause");
 }

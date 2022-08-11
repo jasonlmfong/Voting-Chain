@@ -23,7 +23,7 @@ size_t Block::generateHash()
 {
     std::hash<std::string> transDataHash;
     std::hash<std::string> prevHash;
-    std::string toHash = std::to_string(data.totalVotes["cat"]) + std::to_string(data.totalVotes["dog"]) + data.receiverKey + data.senderKey + std::to_string(data.timeStamp);
+    std::string toHash = std::to_string(data.totalVotes["cat"]) + std::to_string(data.totalVotes["dog"]) + data.chainKey + std::to_string(data.timeStamp);
 
     return transDataHash(toHash) + prevHash(std::to_string(previousHash));
 }

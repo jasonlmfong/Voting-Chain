@@ -1,11 +1,11 @@
 #pragma once
+#include "WebServer.h"
+#include "Blockchain.h"
+#include<string>
+#include<unordered_map>
 
-#include<WS2tcpip.h>
-
-#pragma comment (lib, "ws2_32.lib")
-
-class TcpListener
-{   
+class ChainServer : public WebServer
+{
     private:
         const char* m_ipAddress; //ip address for the server
         int m_port; //port number for service
@@ -14,14 +14,20 @@ class TcpListener
         fd_set m_master; //master file descriptor set
 
     public:
-        TcpListener(const char* ipAddress, int port) : 
-            m_ipAddress(ipAddress), m_port(port) { }
-
         // initialize the listener
         virtual int init();
 
         //run listener
         virtual int run();
+
+        ChainServer(const char* ipAddress, int port) : 
+            WebServer(ipAddress, port) { }
+
+        // Get latest block total votes
+        std::unordered_map<std::string, int> getTotalVotes();
+
+        // build block and add to the end of the chain
+        void addBlock(Blockchain chain, std::unordered_map<std::string, int> change, std::string key, time_t time);
 
     protected:
         //handler for client connections
@@ -33,9 +39,5 @@ class TcpListener
         //handler for when a message is received from the client
         virtual void onMessageReceived(int clientSocket, const char* msg, int length);
 
-        //send a messsage to client
-        void sendToClient(int clientSocket, const char* msg, int length);
-
-        //broadcast a message from a client
-        void broadcastToClients(int sendingClient, const char* msg, int length);
+        Blockchain Votechain;
 };

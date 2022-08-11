@@ -9,20 +9,18 @@ struct TransactionData
 {
     std::unordered_map<std::string, int> totalVotes;
     std::unordered_map<std::string, int> voteChanges;
-    std::string senderKey;
-    std::string receiverKey;
+    std::string chainKey;
     time_t timeStamp;
 
 
     TransactionData(){};
     
 
-    TransactionData(std::unordered_map<std::string, int> ttlVts, std::unordered_map<std::string, int> vtChgs, std::string sender, std::string receiver, time_t time)
+    TransactionData(std::unordered_map<std::string, int> ttlVts, std::unordered_map<std::string, int> vtChgs, std::string key, time_t time)
     {
         totalVotes = ttlVts;
         voteChanges = vtChgs;
-        senderKey = sender;
-        receiverKey = receiver;
+        chainKey = key;
         timeStamp = time;
     };
 };

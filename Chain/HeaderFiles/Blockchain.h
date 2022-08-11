@@ -2,7 +2,7 @@
 #define Blockchain_h
 
 #include <vector>
-
+#include "Block.h"
 #include "Transaction.h"
 
 //block chain class
