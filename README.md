@@ -1,3 +1,3 @@
 # Voting-Chain
 
-A voting system on blockchain on back-end server, with a web front-end
+A voting system with blockchain on back-end server, and a web front-end
