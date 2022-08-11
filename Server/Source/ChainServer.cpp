@@ -55,63 +55,98 @@ int ChainServer::init()
     return 0;
 }
 
-void WebServer::onMessageReceived(int clientSocket, const char* msg, int length)
+void ChainServer::onMessageReceived(int clientSocket, const char* msg, int length)
 {
-    //TODO: when client side sends "\\getTotalVotes", send back voteChain.getLatestBlock().data.totalVotes
-    //TODO: when client side sends "\\voteCat", call addVoteBlock() and vote for cat
-    //TODO: when client side sends "\\voteDog", call addVoteBlock() and vote for dog
-
-    //GET /index.html HTTP/1.1
+    //when client side sends "GET Votes HTTP/1.1", send back voteChain.getLatestBlock().data.totalVotes
+    //when client side sends "POST Cat HTTP/1.1", call addVoteBlock() and vote for cat
+    //when client side sends "POST Dog HTTP/1.1", call addVoteBlock() and vote for dog
 
     //parse out the document requested
     std::istringstream iss(msg);
     std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
 
-    //if the document is not good, then the followign 404 will be returned to client
-    std::string content = "<h1>404 Not Found</h1>";
-    std::string htmlFile = "/main.html";
+    //if the document is not good, then the following 404 will be returned to client
+    std::string content = "404 Not Found";
     int errorCode = 404;
 
     if (parsed.size() >= 3 && parsed[0] == "GET")
     {
-        htmlFile = parsed[1];
-        if (htmlFile == "/")
+        if (parsed[1] == "Votes")
         {
-            htmlFile = "/main.html";
+            errorCode = 200;
+            std::unordered_map<std::string, int> vote = getLatestVotes();
+            
+            std::ostringstream responseContent;
+            responseContent << "{\"cat\": " << vote["cat"] << ", \"dog\": " << vote["dog"] << "}";
+            std::string content = responseContent.str();
+
+            //send content back to the client
+            std::ostringstream oss;
+            oss << "HTTP/1.1 " << errorCode << " OK\r\n";
+            oss << "Cache-Control: no-cache, private\r\n";
+            oss << "Content-Type: text/html\r\n";
+            oss << "Content-Length: " << content.size() << "\r\n";
+            oss << "\r\n";
+            oss << content;
+
+            std::string output = oss.str();
+            int size = output.size() + 1;
+
+            sendToClient(clientSocket, output.c_str(), size);
         }
     }
 
-    //open the document in the local file system
-    std::ifstream f(".\\Web" + htmlFile);
-
-    if (f.good())
+    if (parsed.size() >= 3 && parsed[0] == "POST")
     {
-        //if document is good, then write the document to content
-        std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
-        content = str;
-        errorCode = 200;
+        if (parsed[1] == "Cat")
+        {
+            errorCode = 200;
+            std::unordered_map<std::string, int> voteCat;
+            voteCat["cat"] = 1;
+            voteCat["dog"] = 0;
+
+            std::unordered_map<std::string, int> total = getLatestVotes();
+            int counter = 1;
+            counter += total["cat"];
+            counter += total["dog"];
+            std::string key = "vote" + counter;
+
+            time_t timeNow;
+
+            addVoteBlock(voteCat, key, timeNow);
+        }
+        if (parsed[1] == "Dog")
+        {
+            errorCode = 200;
+            std::unordered_map<std::string, int> voteCat;
+            voteCat["cat"] = 0;
+            voteCat["dog"] = 1;
+
+            std::unordered_map<std::string, int> total = getLatestVotes();
+            int counter = 1;
+            counter += total["cat"];
+            counter += total["dog"];
+            std::string key = "vote" + counter;
+
+            time_t timeNow;
+
+            addVoteBlock(voteCat, key, timeNow);
+        }
     }
+}
 
-    f.close();
-
-    //send content back to the client
-    std::ostringstream oss;
-    oss << "HTTP/1.1 " << errorCode << " OK\r\n";
-    oss << "Cache-Control: no-cache, private\r\n";
-    oss << "Content-Type: text/html\r\n";
-    oss << "Content-Length: " << content.size() << "\r\n";
-    oss << "\r\n";
-    oss << content;
-
-    std::string output = oss.str();
-    int size = output.size() + 1;
-
-    sendToClient(clientSocket, output.c_str(), size);
+//get latest amount of votes
+std::unordered_map<std::string, int> ChainServer::getLatestVotes()
+{
+    return voteChain.getLatestBlock().data.totalVotes;
 }
 
 // build block and add to the end of the chain
 void ChainServer::addVoteBlock(std::unordered_map<std::string, int> change, std::string key, time_t time)
 {
-    TransactionData data(voteChain.getLatestBlock().data.totalVotes, change, key, time);
+    std::unordered_map<std::string, int> total = getLatestVotes();
+    total["cat"] += change["cat"];
+    total["dog"] += change["dog"];
+    TransactionData data(total, change, key, time);
     voteChain.addBlock(data);
 }

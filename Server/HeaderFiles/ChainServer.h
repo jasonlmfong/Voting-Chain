@@ -24,6 +24,9 @@ class ChainServer : public WebServer
         ChainServer(const char* ipAddress, int port) : 
             WebServer(ipAddress, port) { }
 
+        //get latest amount of votes
+        std::unordered_map<std::string, int> getLatestVotes();
+
         // build block and add to the end of the chain
         void addVoteBlock(std::unordered_map<std::string, int> change, std::string key, time_t time);
 
