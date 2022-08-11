@@ -1,19 +1,33 @@
+sendAMessage("\\getTotalVotes")
+//server.listen(8080, "0.0.0.0", backlog, callback);
+//listen to server response and save votes to catVotes and dogVotes
+
 var catVotes = 0;
-
-function catOnClick() {
-  const xhttp = new XMLHttpRequest();
-  xhttp.onload = function() {
-    document.getElementById("cat clicks").innerHTML = this.responseText;
-  }
-  xhttp.open("GET", "0.0.0.0");
-  xhttp.send();
-  catVotes += 1;
-  document.getElementById("cat clicks").innerHTML = catVotes;
-};
-
 var dogVotes = 0;
 
+function catOnClick() {
+  //add vote for cat
+  catVotes += 1;
+  //display both
+  document.getElementById("cat clicks").innerHTML = catVotes;
+  document.getElementById("dog clicks").innerHTML = dogVotes;
+  sendAMessage("\\voteCat")
+};
+
 function dogOnClick() {
-    dogVotes += 1;
-    document.getElementById("dog clicks").innerHTML = dogVotes;
-  };
+  //add vote for dog
+  dogVotes += 1;
+  //display both
+  document.getElementById("cat clicks").innerHTML = catVotes;
+  document.getElementById("dog clicks").innerHTML = dogVotes;
+  sendAMessage("\\voteDog")
+};
+
+//send message to server backend
+function sendAMessage(msg) {
+  var c = net.createConnection(8080, "0.0.0.0");
+  c.on("connect", function() {
+  // connected to TCP server.
+  c.write(msg);
+  });
+}

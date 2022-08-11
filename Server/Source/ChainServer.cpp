@@ -1,7 +1,12 @@
 #include "ChainServer.h"
+#include "Blockchain.h"
 #include<iostream>
-#include<string>
+#include<istream>
 #include<sstream>
+#include<fstream>
+#include<string>
+#include<vector>
+#include<iterator>
 
 int ChainServer::init()
 {
@@ -39,117 +44,74 @@ int ChainServer::init()
         return WSAGetLastError();
     }
 
-    //create master fiel descriptor set and zero the set
+    //create master file descriptor set and zero the set
     FD_ZERO(&m_master);
 
     //add the first socket we want to interact with: the listening socket, we need this to hear the incoming messages
     FD_SET(m_socket, &m_master);
 
+    voteChain = Blockchain();
+
     return 0;
 }
 
-int ChainServer::run()
+void WebServer::onMessageReceived(int clientSocket, const char* msg, int length)
 {
-    //quit command will stop the server from running
-    bool running = true;
-    
-    while(running)
+    //TODO: when client side sends "\\getTotalVotes", send back voteChain.getLatestBlock().data.totalVotes
+    //TODO: when client side sends "\\voteCat", call addVoteBlock() and vote for cat
+    //TODO: when client side sends "\\voteDog", call addVoteBlock() and vote for dog
+
+    //GET /index.html HTTP/1.1
+
+    //parse out the document requested
+    std::istringstream iss(msg);
+    std::vector<std::string> parsed((std::istream_iterator<std::string>(iss)), std::istream_iterator<std::string>());
+
+    //if the document is not good, then the followign 404 will be returned to client
+    std::string content = "<h1>404 Not Found</h1>";
+    std::string htmlFile = "/main.html";
+    int errorCode = 404;
+
+    if (parsed.size() >= 3 && parsed[0] == "GET")
     {
-        //make a copy to the master file descriptor, since the call to select() is _DESTRUCTUVE_.
-        //the copy only contains sockets which are accepting inbound connection requests or messages
-
-        //for example, a server with a master file descriptor that contains 4 items
-        //the lsitening socket and 3 clients. when this is passed into select(), only the sockets that are intereacting with the server are returned.
-        //if only one client is sending a message at a time, the contents of 'copy' will be one socket. we would have lost all other sockets.
-
-        //therefore we make a copy of the master list to pass into select()
-
-        fd_set copy = m_master;
-
-        //see who is talking to us
-        int socketCount = select(0, &copy, nullptr, nullptr, nullptr);
-
-        //loop through all the current connections/ potential connections
-        for (int i = 0; i < socketCount; i++)
+        htmlFile = parsed[1];
+        if (htmlFile == "/")
         {
-            //makes its easier by doing this assignment
-            SOCKET sock = copy.fd_array[i];
-
-            //is it an inbound connection
-            if (sock == m_socket)
-            {
-                //acept new conenction
-                SOCKET client = accept(m_socket, nullptr, nullptr);
-
-                //add the new connection to the list of connected clients
-                FD_SET(client, &m_master);
-
-                //client connected
-                onClientConnected(client);
-            }
-            else //inbound message
-            {
-                char buf[4096];
-                ZeroMemory(buf, 4096);
-
-                //receive message
-                int bytesIn = recv(sock, buf, 4096, 0);
-                if (bytesIn <= 0)
-                {
-                    //drop the client
-                    //client disconnected
-                    onClientDisconnected(sock);
-                    closesocket(sock);
-                    FD_CLR(sock, &m_master);
-                }
-                else
-                {
-                    onMessageReceived(sock, buf, bytesIn);
-                    //check to see if it is a command. \quit kills the server
-                    if (buf[0] == '\\')
-                    {
-                        std::string cmd = std::string(buf, bytesIn);
-                        if (cmd == "\\quit")
-                        {
-                            running = false;
-                            break;
-                        }
-
-                        //unknown command
-                        continue;
-                    }
-
-                    //send message to other clients, and definitely not the listening socket
-                    std::ostringstream ss;
-                    ss << "SOCKET #" << sock << ": " << buf << "\r\n";
-                    std::string strOut = ss.str();
-                    broadcastToClients(sock, strOut.c_str(), strOut.size() + 1);
-                }
-            }
+            htmlFile = "/main.html";
         }
     }
 
-    //remove the listening socket from the master file list and close it, to prevent anyone else trying to connect
-    FD_CLR(m_socket, &m_master);
-    closesocket(m_socket);
+    //open the document in the local file system
+    std::ifstream f(".\\Web" + htmlFile);
 
-    //message to let use know what is happening
-    std::string msg = "server is shutting down\r\n";
-    
-    while (m_master.fd_count > 0)
+    if (f.good())
     {
-        //get socket number
-        SOCKET sock = m_master.fd_array[0];
-
-        //send goodbye message
-        sendToClient(sock, msg.c_str(), msg.size() + 1);
-
-        //remove it from the master file list and close the socket
-        FD_CLR(sock, &m_master);
-        closesocket(sock);
+        //if document is good, then write the document to content
+        std::string str((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
+        content = str;
+        errorCode = 200;
     }
 
-    //cleanup winsock
-    WSACleanup();
-    return 0;
+    f.close();
+
+    //send content back to the client
+    std::ostringstream oss;
+    oss << "HTTP/1.1 " << errorCode << " OK\r\n";
+    oss << "Cache-Control: no-cache, private\r\n";
+    oss << "Content-Type: text/html\r\n";
+    oss << "Content-Length: " << content.size() << "\r\n";
+    oss << "\r\n";
+    oss << content;
+
+    std::string output = oss.str();
+    int size = output.size() + 1;
+
+    sendToClient(clientSocket, output.c_str(), size);
+}
+
+// build block and add to the end of the chain
+void ChainServer::addVoteBlock(std::unordered_map<std::string, int> change, std::string key, time_t time)
+{
+    TransactionData data(voteChain.getLatestBlock().data.totalVotes, change, key, time);
+    voteChain.addBlock(data);
 }
